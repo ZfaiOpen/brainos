@@ -45,3 +45,8 @@ Issues = "https://github.com/zfai-open/brainos/issues"
 
 [tool.setuptools.packages.find]
 include = ["brainos*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers"
