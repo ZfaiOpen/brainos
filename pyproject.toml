@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "brainos"
+version = "0.9.0"
+description = "Zfai Open brainos - biologically-inspired memory engine for AI agents, with a minimal HTTP/SDK surface"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "zfai-open contributors" }]
+keywords = ["memory", "ai-agents", "memory-engine", "episodic-memory", "llm"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+# The memory core is standard-library only: `pip install brainos` pulls zero
+# third-party packages. Server extras are needed only for the HTTP surface.
+dependencies = []
+
+[project.optional-dependencies]
+server = [
+    "fastapi>=0.100",
+    "uvicorn>=0.23",
+    "pydantic>=2.0",
+    "sqlalchemy>=2.0",
+    "aiosqlite>=0.19",
+]
+yaml = ["pyyaml>=6.0"]
+all = ["brainos[server,yaml]"]
+
+[project.urls]
+Homepage = "https://github.com/zfai-open/brainos"
+Repository = "https://github.com/zfai-open/brainos"
+Issues = "https://github.com/zfai-open/brainos/issues"
+
+[tool.setuptools.packages.find]
+include = ["brainos*"]

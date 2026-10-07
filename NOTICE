@@ -1,0 +1,11 @@
+Zfai Open — brainos
+Copyright 2026 zfai-open contributors
+
+This product includes software developed as part of the Zfai Open project.
+Licensed under the Apache License, Version 2.0.
+
+The open-core baseline (v0.9.0) contains the biologically-inspired memory
+engine, a minimal HTTP/SDK service surface, and generic kernel support
+primitives. Agentic meta-architecture, battle-tuned scheduling layers,
+billing and benchmark assets are NOT part of this repository (see
+CARVE_NOTICE.md).

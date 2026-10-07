@@ -1,0 +1,26 @@
+# --- backups & runtime artifacts (never commit) ---
+*.bak
+*.bak_*
+*.bak.*
+*.heal_bak*
+*.v9bak*
+*.log
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+.venv/
+venv/
+
+# --- runtime memory islands (never commit) ---
+evolution_memory*.json
+*memory_island*.json
+data/
+*.db
+*.sqlite3
+
+# --- environment & secrets ---
+.env
+.env.*
