@@ -174,7 +174,9 @@ class TestMemoryEntryLifecycle:
         entry = MemoryEntry(content="x")
         assert entry.id.startswith("mem_")
         assert entry.created_at > 0
-        assert entry.accessed_at == entry.created_at
+        # created_at/accessed_at default from two independent time.time()
+        # calls — assert they coincide within clock-tick tolerance, not exactly
+        assert abs(entry.accessed_at - entry.created_at) < 0.01
 
     def test_touch_increments_access_count(self) -> None:
         entry = MemoryEntry(content="x")
