@@ -8,13 +8,13 @@ version = "0.9.0"
 description = "Zfai Open brainos - biologically-inspired memory engine for AI agents, with a minimal HTTP/SDK surface"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "Apache-2.0" }
+license = {text = "AGPL-3.0"}
 authors = [{ name = "zfai-open contributors" }]
 keywords = ["memory", "ai-agents", "memory-engine", "episodic-memory", "llm"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",

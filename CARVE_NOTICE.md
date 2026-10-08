@@ -1,7 +1,7 @@
 # CARVE NOTICE — brainos v0.9 open-core boundary
 
 This repository is the **open-core baseline (v0.9.0)** of the memory system,
-published by Zfai Open under Apache-2.0. This notice documents what is
+published by Zfai Open under AGPL-3.0. This notice documents what is
 deliberately **not** included and why.
 
 ## Included (open core)

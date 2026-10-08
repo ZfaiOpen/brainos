@@ -1,7 +1,7 @@
 # Zfai Open — brainos
 
 Biologically-inspired memory engine for AI agents, with a minimal HTTP/SDK surface.
-仿生物记忆引擎 + 最小服务面。Apache-2.0 开源，由 Zfai Open 团队维护。
+仿生物记忆引擎 + 最小服务面。AGPL-3.0 开源，由 Zfai Open 团队维护。
 
 [English](#english) | [中文](#中文)
 
@@ -71,7 +71,7 @@ See `CARVE_NOTICE.md`.
 
 ### License
 
-Apache-2.0. © 2026 zfai-open contributors.
+AGPL-3.0. © 2026 Zfai Open contributors.
 
 ## 中文
 
@@ -112,10 +112,6 @@ Agent 元架构（agent_loop/AMCC/autonomous/ANS）、战役级调度调优层�
 内核架构，商业版并非本仓库的简单超集，两者能力边界见 `CARVE_NOTICE.md`。
 
 ### License
-
-Apache-2.0
-
-## License
 
 This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
 

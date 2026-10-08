@@ -2,7 +2,7 @@ Zfai Open — brainos
 Copyright 2026 zfai-open contributors
 
 This product includes software developed as part of the Zfai Open project.
-Licensed under the Apache License, Version 2.0.
+Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
 
 The open-core baseline (v0.9.0) contains the biologically-inspired memory
 engine, a minimal HTTP/SDK service surface, and generic kernel support
