@@ -114,3 +114,15 @@ Agent 元架构（agent_loop/AMCC/autonomous/ANS）、战役级调度调优层�
 ### License
 
 Apache-2.0
+
+## License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+This means:
+- You are free to use, study, modify, and distribute this software
+- If you run modified versions as a network service, you **must** make the modified source code available to users
+- Any derivative work must also be licensed under AGPL-3.0
+- Commercial licensing is available separately — contact ceo@zfai.cc
+
+Copyright (C) 2026 Zfai Open. All rights reserved under AGPL-3.0.
