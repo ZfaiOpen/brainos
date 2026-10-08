@@ -3,6 +3,12 @@
 Biologically-inspired memory engine for AI agents, with a minimal HTTP/SDK surface.
 仿生物记忆引擎 + 最小服务面。AGPL-3.0 开源，由 Zfai Open 团队维护。
 
+> **Note:** BRAIOS is a Python prototype system for memory algorithm validation.
+> ZfaiOS is an independent commercial re-implementation from scratch in Rust,
+> inheriting the memory architecture and experimental findings from BRAIOS.
+> Both projects are developed by the same team.
+
+
 [English](#english) | [中文](#中文)
 
 ## English
