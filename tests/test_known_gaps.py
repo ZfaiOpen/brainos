@@ -27,15 +27,18 @@ FULL INVENTORY (brainos/memory only):
     manager.py         get_instance
     neural_plasticity.py  hebbian_learn
     procedural.py      record_success
-    recall.py          recall
     replay.py          add
     short_term.py      store, retrieve
     snapshot.py        to_dict
-    store.py           retrieve
     temporal_awareness.py  is_valid
     temporal_graph.py  has_entity
     trigger.py         evaluate
     working.py         touch, store
+
+CLOSED in v0.9.1 (ratchet retired, probes below are now real behavioral
+tests): MemoryStore.retrieve, RecallEngine.recall — filled to make the AML
+contract surface (POST /add, POST /search) live on a real multi-channel
+retrieval engine.
 
 These probes assert the INTENDED behavior with ``xfail(strict=True)``:
 they xfail today (stub returns None), and the moment someone fills a stub
@@ -61,7 +64,6 @@ from brainos.memory.short_term import ShortTermMemory
 from brainos.memory.working import WorkingMemory
 
 
-@pytest.mark.xfail(reason="upstream pass-stub: MemoryStore.retrieve", strict=True)
 def test_store_single_entry_retrieve() -> None:
     store = MemoryStore()
     mid = store.store(MemoryEntry(content="find me"))
@@ -106,7 +108,6 @@ def test_replay_add_grows_buffer() -> None:
     assert len(replay) == 1
 
 
-@pytest.mark.xfail(reason="upstream pass-stub: RecallEngine.recall", strict=True)
 def test_recall_engine_returns_results() -> None:
     from brainos.memory import RecallEngine, RecallMode
 

@@ -42,8 +42,12 @@ class Response:
     @classmethod
     @logged()
     @safe_execute
-    def ok(cls, data=None, request_id=""):
-        pass
+    def ok(cls, data=None, request_id: str = "") -> Response:
+        body = data if isinstance(data, dict) else {"data": data}
+        resp = cls(status_code=200, body=body)
+        if request_id:
+            resp.headers["X-Request-ID"] = str(request_id)
+        return resp
 
 
     @classmethod

@@ -49,8 +49,9 @@ class AuthToken:
 
 
     @property
-    def is_expired(self):
-        pass
+    def is_expired(self) -> bool:
+        """True when ``expires_at`` is in the past (0.0 = the epoch = expired)."""
+        return time.time() >= self.expires_at
 
 
 

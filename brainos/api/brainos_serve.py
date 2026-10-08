@@ -11,7 +11,14 @@
 # limitations under the License.
 """brainos/api/brainos_serve.py — BrainOS v6 FastAPI 服务
 
-7个核心端点:
+Memory contract (open baseline, AML wire shape):
+  POST /add        — store conversation messages (idempotent request_id)
+  POST /search     — evidence-only retrieval {"data":[{id,content,created_at}]}
+  POST /search/stream — the same search as Server-Sent Events
+                       (meta → evidence* → summary)
+  GET  /health     — liveness (auth-exempt; advertises the memory surface)
+
+Legacy system endpoints (retained):
   POST /verify  — 代码验证
   POST /scan    — 代码扫描
   POST /fix     — AI修复
@@ -20,19 +27,24 @@
   GET  /trust   — 信任天气
   GET  /evolve/status — 进化状态
 
-启动: brainos serve --port 8080
+启动: brainos serve --port 8080  /  python -m brainos.api.brainos_serve
+环境: BRAINOS_API_KEY 启用 Authorization: Token <KEY> 鉴权（缺省=本地开放）；
+      BRAINOS_DB 指定 SQLite 持久化路径（缺省=进程内）。
 """
 from __future__ import annotations
 
+import json
 import logging
+import os
 import time
 from typing import Any
 
 logger = logging.getLogger("brainos.api.brainos_serve")
 
 try:
-    from fastapi import FastAPI, HTTPException
+    from fastapi import FastAPI, HTTPException, Request as FastAPIRequest
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.responses import JSONResponse, StreamingResponse
     from pydantic import BaseModel, Field
     import uvicorn
     _FASTAPI_OK = True
@@ -85,6 +97,73 @@ def create_brainos_app() -> Any:
     )
 
     _start_time = time.time()
+
+    # ══ Memory contract surface (open baseline) ══════════════════════════
+    # One wiring path: the internal router holds all handler logic; FastAPI is
+    # only a transport adapter (parse body → internal Request → Response).
+    from brainos.api.aml import format_sse, wire_memory_surface
+    from brainos.api.server import APIConfig, BrainOSAPI
+    from brainos.api.middleware import Request as InternalRequest
+
+    _internal_api = BrainOSAPI(APIConfig(host="0.0.0", port=8080))
+    _aml_handler, _aml_service = wire_memory_surface(_internal_api)
+
+    async def _bridge_request(method: str, path: str, request: Any, body: dict[str, Any]) -> Any:
+        """Transport adapter: internal Request → Response → JSONResponse."""
+        internal = InternalRequest(
+            method=method,
+            path=path,
+            headers={str(k): str(v) for k, v in getattr(request, "headers", {}).items()},
+            body=body,
+            query_params={str(k): str(v) for k, v in getattr(request, "query_params", {}).items()},
+        )
+        resp = await _internal_api.handle_request(internal)
+        return JSONResponse(content=resp.body, status_code=resp.status_code)
+
+    async def _parse_json_body(request: Any) -> dict[str, Any]:
+        try:
+            raw = await request.body()
+            parsed = json.loads(raw) if raw else {}
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            raise HTTPException(status_code=400, detail=f"invalid JSON body: {exc}") from exc
+        if not isinstance(parsed, dict):
+            raise HTTPException(status_code=400, detail="body must be a JSON object")
+        return parsed
+
+    # ── GET /health — liveness (auth-exempt), advertises the memory surface ──
+    @app.get("/health", tags=["Memory"], summary="服务健康（免鉴权·含memory路由自报）")
+    async def health():
+        return await _bridge_request("GET", "/health", None, {})
+
+    # ── POST /add — AML add contract ──
+    @app.post("/add", tags=["Memory"], summary="写入对话记忆（request_id幂等）")
+    async def add(request: FastAPIRequest):
+        body = await _parse_json_body(request)
+        return await _bridge_request("POST", "/add", request, body)
+
+    # ── POST /search — AML search contract (evidence-only) ──
+    @app.post("/search", tags=["Memory"], summary="证据检索 {data:[{id,content,created_at}]}")
+    async def search(request: FastAPIRequest):
+        body = await _parse_json_body(request)
+        return await _bridge_request("POST", "/search", request, body)
+
+    # ── POST /search/stream — same search as SSE (meta → evidence* → summary) ──
+    @app.post("/search/stream", tags=["Memory"], summary="流式证据检索（SSE·证据先于汇总）")
+    async def search_stream(request: FastAPIRequest):
+        body = await _parse_json_body(request)
+        if not _aml_service.check_auth(request.headers.get("authorization")):
+            raise HTTPException(status_code=401, detail="unauthorized")
+        error = _aml_service.validate_search(body)
+        if error:
+            raise HTTPException(status_code=400, detail=error)
+
+        def _events():
+            for kind, data in _aml_service.search_events(body):
+                yield format_sse(kind, data)
+
+        return StreamingResponse(_events(), media_type="text/event-stream")
+
+    # ══ Legacy system endpoints (retained as-is) ═════════════════════════
 
     # ── GET /status — 系统状态 ──
     @app.get("/status", tags=["System"], summary="系统状态")
@@ -357,4 +436,15 @@ def run_server(host="0.0.0.0", port=8080):
         # 兜底所有未知异常
         logger.error("Unexpected error during server execution: %s", _exc, exc_info=True)
         print(f"\nUnexpected server error: {_exc}")
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
+    _env_host = os.environ.get("BRAINOS_API_HOST", "0.0.0.0")
+    try:
+        _env_port = int(os.environ.get("BRAINOS_API_PORT", "8080"))
+    except ValueError:
+        print(f"Error: Invalid BRAINOS_API_PORT {os.environ.get('BRAINOS_API_PORT')!r}; using 8080.")
+        _env_port = 8080
+    run_server(host=_env_host, port=_env_port)
 

@@ -15,16 +15,17 @@ pass-only methods under brainos/api exist identically upstream (/opt/brainos_new
 — the v0.9 carve introduced ZERO api stubs.
 
 FULL INVENTORY (brainos/api):
-    auth.py                     AuthToken.to_dict, AuthToken.is_expired
+    auth.py                     AuthToken.to_dict
     gateway.py                  Route.to_dict
-    middleware.py               Response.ok
     rate_limiter.py             RateLimitConfig.to_dict
-    route_handlers/memory.py    MemoryRouteMetrics.record_query
     route_handlers/observability.py  ObservabilityRouteMetrics.record_query
     route_handlers/schemas.py   AIAnalyzeRequest.to_dict
-    routes.py                   Route._compile_pattern
-    server.py                   BrainOSAPI.post
     websocket.py                WSMessage.to_json, WSMessage._json_default
+
+CLOSED in v0.9.1 (ratchet retired, probes below are now real behavioral
+tests): Response.ok, AuthToken.is_expired, MemoryRouteMetrics.record_query,
+Route._compile_pattern, BrainOSAPI.post — filled to make the AML contract
+surface (POST /add, POST /search, GET /health) live.
 
 Same ratchet as test_known_gaps.py: every probe asserts the INTENDED behavior
 with ``xfail(strict=True)`` — it xfails today (stub returns None / unpacking
@@ -57,7 +58,6 @@ def test_auth_token_to_dict_roundtrip_fields() -> None:
     assert data["client_id"] == "client-a"
 
 
-@pytest.mark.xfail(reason="upstream pass-stub: AuthToken.is_expired", strict=True)
 def test_auth_token_is_expired_for_past_expiry() -> None:
     from brainos.api.auth import AuthMethod, AuthToken
 
@@ -86,7 +86,6 @@ def test_gateway_route_to_dict() -> None:
 # --- middleware.py ----------------------------------------------------------
 
 
-@pytest.mark.xfail(reason="upstream pass-stub: Response.ok", strict=True)
 def test_response_ok_classmethod_shape() -> None:
     from brainos.api.middleware import Response
 
@@ -112,7 +111,6 @@ def test_rate_limit_config_to_dict() -> None:
 # --- route_handlers/memory.py ----------------------------------------------
 
 
-@pytest.mark.xfail(reason="upstream pass-stub: MemoryRouteMetrics.record_query", strict=True)
 def test_memory_route_metrics_record_query() -> None:
     from brainos.api.route_handlers.memory import MemoryRouteMetrics
 
@@ -153,7 +151,6 @@ def test_ai_analyze_request_to_dict() -> None:
 # --- routes.py ----------------------------------------------------------------
 
 
-@pytest.mark.xfail(reason="upstream pass-stub: routes.Route._compile_pattern", strict=True)
 def test_router_route_compiles_pattern_and_extracts_params() -> None:
     from brainos.api.routes import Route
 
@@ -165,7 +162,6 @@ def test_router_route_compiles_pattern_and_extracts_params() -> None:
 # --- server.py -----------------------------------------------------------------
 
 
-@pytest.mark.xfail(reason="upstream pass-stub: BrainOSAPI.post", strict=True)
 def test_api_post_registers_route() -> None:
     from brainos.api.server import BrainOSAPI
 

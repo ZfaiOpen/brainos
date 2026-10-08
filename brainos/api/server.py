@@ -97,9 +97,8 @@ class BrainOSAPI:
 
     @logged()
     @safe_execute
-    def post(self, path, handler):
-        pass
-
+    def post(self, path: str, handler: RequestHandler) -> None:
+        self._router.add_route("POST", path, handler)
 
     @logged()
     @safe_execute

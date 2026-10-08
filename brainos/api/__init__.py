@@ -17,6 +17,14 @@ only.
 
 from __future__ import annotations
 
+from brainos.api.aml import (
+    AMLRouteHandler,
+    AMLService,
+    AddLedger,
+    format_sse,
+    register_aml_routes,
+    wire_memory_surface,
+)
 from brainos.api.auth import AuthManager, AuthMethod, AuthResult, AuthToken
 from brainos.api.gateway import APIGateway, GatewayRequest, GatewayResponse, HTTPMethod, Route
 from brainos.api.middleware import Middleware, MiddlewareChain
@@ -25,7 +33,10 @@ from brainos.api.routes import Router
 from brainos.api.server import BrainOSAPI
 
 __all__ = [
+    "AMLRouteHandler",
+    "AMLService",
     "APIGateway",
+    "AddLedger",
     "AuthManager",
     "AuthMethod",
     "AuthResult",
@@ -42,4 +53,7 @@ __all__ = [
     "RateLimiter",
     "Route",
     "Router",
+    "format_sse",
+    "register_aml_routes",
+    "wire_memory_surface",
 ]

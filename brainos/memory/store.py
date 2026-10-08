@@ -99,9 +99,9 @@ class MemoryStore:
 
     @logged()
     @safe_execute
-    def retrieve(self, memory_id):
-        pass
-
+    def retrieve(self, memory_id: str) -> MemoryEntry | None:
+        with self._lock:
+            return self._store.get(memory_id)
 
     @logged()
     @safe_execute

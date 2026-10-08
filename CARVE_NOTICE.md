@@ -9,7 +9,7 @@ deliberately **not** included and why.
 | Layer | Contents |
 |---|---|
 | `brainos/memory/` | 43 modules: core/store/persistence, episodic/semantic/procedural/working memory, consolidation, forgetting curves, CRDT consistency, temporal knowledge graphs (v1 + v2), anchoring, weaving, hippocampal-dream consolidation, integrity guard, unified memo engine |
-| `brainos/api/` | Minimal HTTP/WS surface: server, gateway, router, middleware, JWT/bearer auth, rate limiter, memory + observability route handlers, SQLite session layer |
+| `brainos/api/` | Minimal HTTP/WS surface: server, gateway, router, middleware, JWT/bearer auth, rate limiter, memory + observability route handlers, SQLite session layer — plus the **AML wire contract** (`POST /add` with idempotent `request_id`, `POST /search` evidence-only, `POST /search/stream` SSE, `GET /health`) and the fixed-strategy multi-channel recall baseline (inverted-index BM25 + char-trigram + recency, RRF fusion; no learned weights) |
 | `brainos/kernel/` | Generic support primitives: safe_execute, async_compat, resilience (retry/circuit), config, protocol interfaces. The cross-domain combo engine ships as an import-compatible no-op stub |
 | `brainos/observability/` | auto_log only |
 | `brainos/governance/` | constitution ships as a NoopConstitution stub (pass-through decisions) |
@@ -32,3 +32,7 @@ deliberately **not** included and why.
 - `memory/temporal_graph_v2.py` is **frozen at v0.9.0**: its evolution continues
   in the commercial version only (see the banner in the file).
 - `MemoryClient` (`brainos/memory/sdk.py`) is the stable SDK entry point.
+- `memory/recall.py` ships the **fixed-strategy retrieval baseline**: classical
+  IR channels with fixed defaults. Adaptive channel weighting, learned fusion,
+  and tuned rankers evolve in the commercial version only — the open-core file
+  will not grow tuned parameters.

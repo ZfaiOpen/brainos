@@ -19,6 +19,11 @@ from typing import Any, Optional
 
 from brainos.api.server import BrainOSAPI, APIConfig, Request, Response
 
+try:  # open-core memory surface: AML contract + memory routes (stdlib-only core)
+    from brainos.api.aml import wire_memory_surface
+except ImportError:  # pragma: no cover - degraded build without the memory core
+    wire_memory_surface = None  # type: ignore[assignment,misc]
+
 try:  # commercial version only (the /api/v1 registry is excluded from open core)
     from brainos.api.v1_routes import V1RouteRegistry
 except ImportError:  # open-core degradation
@@ -33,6 +38,7 @@ logger = logging.getLogger("brainos.api.run")
 
 try:
     from fastapi import FastAPI
+    from fastapi import Request as FastAPIRequest
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import JSONResponse
     import uvicorn
@@ -48,6 +54,14 @@ class BrainOSAPIServer:
         self._port = port
         self._workers = workers
         self._api = BrainOSAPI(APIConfig(host=host, port=port))
+        self._memory_handler = None
+        self._aml_service = None
+        if wire_memory_surface is not None:
+            # open-core live surface: POST /add, POST /search, GET /health and
+            # the legacy memory routes, all on one store (db path via BRAINOS_DB)
+            self._memory_handler, self._aml_service = wire_memory_surface(
+                self._api, db_path=os.environ.get("BRAINOS_DB") or None
+            )
         self._v1_routes = V1RouteRegistry(self._api) if V1RouteRegistry is not None else None
         self._bootstrap_status: dict[str, Any] = {}
         self._start_time = 0.0
@@ -110,13 +124,34 @@ class BrainOSAPIServer:
         return app
 
     def _register_routes(self, app: FastAPI) -> None:
+        """Bridge every internal-router route onto FastAPI.
+
+        The bridge is a thin transport adapter: it parses the JSON body /
+        query / headers into the internal Request, delegates to
+        ``BrainOSAPI.handle_request`` and maps the Response back — all handler
+        logic (AML contract, memory routes) lives in one place.
+        """
         router = self._api.router
 
         for method, path, handler in router.all_routes():
 
-            def _make_handler(h=handler, m=method, p=path):
-                async def _handler():
-                    req = Request(method=m, path=p)
+            def _make_handler(m=method, p=path):
+                async def _handler(request: FastAPIRequest):
+                    try:
+                        body = await request.json()
+                    except Exception:
+                        body = {}  # GET/no-body: handlers see an empty body
+                    if not isinstance(body, dict):
+                        return JSONResponse(
+                            content={"error": "body must be a JSON object"}, status_code=400
+                        )
+                    req = Request(
+                        method=m,
+                        path=p,
+                        headers={str(k): str(v) for k, v in request.headers.items()},
+                        body=body,
+                        query_params={str(k): str(v) for k, v in request.query_params.items()},
+                    )
                     resp: Response = await self._api.handle_request(req)
                     return JSONResponse(content=resp.body, status_code=resp.status_code)
 

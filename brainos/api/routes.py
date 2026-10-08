@@ -34,9 +34,16 @@ class Route:
         self.compiled_pattern, self.param_names = self._compile_pattern(self.pattern)
 
     @staticmethod
-    def _compile_pattern(pattern):
-        pass
+    def _compile_pattern(pattern: str) -> tuple[re.Pattern[str], list[str]]:
+        """Compile ``/path/{param}`` into a regex plus the parameter names."""
+        param_names: list[str] = []
 
+        def _sub(match: re.Match[str]) -> str:
+            param_names.append(match.group(1))
+            return f"(?P<{match.group(1)}>[^/]+)"
+
+        regex = "^" + re.sub(r"\{([A-Za-z_]\w*)\}", _sub, pattern) + "$"
+        return re.compile(regex), param_names
 
     @logged()
     @safe_execute
@@ -85,6 +92,10 @@ class Router:
     @property
     def route_count(self) -> int:
         return len(self._routes)
+
+    def all_routes(self) -> list[tuple[str, str, Callable[..., Any]]]:
+        """All registered routes as (method, pattern, handler) tuples."""
+        return [(r.method, r.pattern, r.handler) for r in self._routes]
 
     @logged()
     @safe_execute

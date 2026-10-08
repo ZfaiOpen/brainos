@@ -127,7 +127,13 @@ class MemoryEntry:
         return False
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        data = asdict(self)
+        # JSON-safe projection: enums → their string values
+        if isinstance(data.get("memory_type"), MemoryType):
+            data["memory_type"] = data["memory_type"].value
+        if isinstance(data.get("tier"), MemoryTier):
+            data["tier"] = data["tier"].value
+        return data
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> MemoryEntry:

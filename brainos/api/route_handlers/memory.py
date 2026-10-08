@@ -63,8 +63,9 @@ class MemoryRouteMetrics:
 
     @logged()
     @safe_execute
-    def record_query(self, latency_ms):
-        pass
+    def record_query(self, latency_ms) -> None:
+        self.total_queries += 1
+        self.query_latency_total_ms += float(latency_ms)
 
 
     @logged()
