@@ -133,6 +133,42 @@ class TestApplyForgetting:
         assert stats.total_evaluated == 4
         assert store.count()["total"] == 4  # dry run: nothing removed
 
+    def test_real_delete_removes_weak_entries_and_keeps_strong(self) -> None:
+        """Non-dry-run path: entries below the threshold are really removed,
+        entries above it survive, and the stats reflect both populations."""
+        store = MemoryStore()
+        old = MemoryEntry(content="ancient", created_at=time.time() - 400 * DAY)
+        fresh = MemoryEntry(content="fresh", created_at=time.time())
+        old_id = store.store(old)
+        store.store(fresh)
+
+        fc = ForgettingCurve(store=store, retention_threshold=0.5)
+        stats = fc.apply_forgetting(dry_run=False)
+
+        assert stats.forgotten == 1
+        assert stats.retained == 1
+        assert stats.forgotten_ids == [old_id]
+        assert store.retrieve(old_id) is None  # really deleted
+        assert store.count()["total"] == 1  # fresh entry survives
+        assert fc.get_last_stats() is stats
+
+    def test_real_delete_is_durable_across_sqlite_reopen(self, tmp_path) -> None:
+        """The deletion must persist: a fresh store bound to the same sqlite
+        file must not resurrect forgotten entries (pattern reused from the
+        store-engine durability regression)."""
+        import tempfile
+        from pathlib import Path
+
+        db = str(Path(tmp_path) / "forget.db")
+        store = MemoryStore(db_path=db)
+        for i in range(3):
+            store.store(MemoryEntry(content=f"old {i}", created_at=time.time() - 400 * DAY))
+        ForgettingCurve(store=store, retention_threshold=0.5).apply_forgetting(dry_run=False)
+        store.close() if hasattr(store, "close") else None
+
+        reopened = MemoryStore(db_path=db)
+        assert reopened.count()["total"] == 0
+
     def test_stats_object_shape(self) -> None:
         fc = ForgettingCurve(store=MemoryStore())
         stats = fc.apply_forgetting(dry_run=True)

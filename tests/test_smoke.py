@@ -37,8 +37,9 @@ import brainos.memory as memory_pkg
 # Symbols that must stay importable from the package facade: the public API
 # surface of the memory core. If a carve change removes one of these, this
 # test is the tripwire.
-# NOTE: episode/semantic/working/short_term classes are intentionally absent
-# from the v0.9 facade — consumers import them from their submodules.
+# Facade decision (carve batch 2): the five consumer-facing layer types
+# (Episode/EpisodeStore/SemanticMemory/WorkingMemory/ShortTermMemory) are
+# re-exported from brainos.memory so consumers do not need submodule imports.
 EXPECTED_EXPORTS = (
     "CoreBelief",
     "CoreMemory",
@@ -70,6 +71,11 @@ EXPECTED_EXPORTS = (
     "Snapshot",
     "Anchor",
     "MemoryAnchor",
+    "Episode",
+    "EpisodeStore",
+    "SemanticMemory",
+    "ShortTermMemory",
+    "WorkingMemory",
 )
 
 
@@ -81,6 +87,25 @@ def test_package_import_and_version() -> None:
 def test_public_symbol_importable(symbol: str) -> None:
     obj = getattr(memory_pkg, symbol, None)
     assert obj is not None, f"brainos.memory.{symbol} missing from package facade"
+
+
+@pytest.mark.parametrize(
+    ("facade_name", "module_name"),
+    [
+        ("Episode", "brainos.memory.episode.Episode"),
+        ("EpisodeStore", "brainos.memory.episode.EpisodeStore"),
+        ("SemanticMemory", "brainos.memory.semantic.SemanticMemory"),
+        ("ShortTermMemory", "brainos.memory.short_term.ShortTermMemory"),
+        ("WorkingMemory", "brainos.memory.working.WorkingMemory"),
+    ],
+)
+def test_facade_reexports_are_the_canonical_classes(facade_name: str, module_name: str) -> None:
+    """Facade exports must be identity-re-exports, not wrapper copies."""
+    from importlib import import_module
+
+    mod_path, cls_name = module_name.rsplit(".", 1)
+    canonical = getattr(import_module(mod_path), cls_name)
+    assert getattr(memory_pkg, facade_name) is canonical
 
 
 def test_all_memory_modules_import() -> None:

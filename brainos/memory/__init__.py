@@ -120,6 +120,21 @@ from brainos.memory.trigger import (
 from brainos.memory.memory_manager import (
     MemoryManager as MemoryManager,
 )
+from brainos.memory.episode import (
+    Episode as Episode,
+)
+from brainos.memory.episode import (
+    EpisodeStore as EpisodeStore,
+)
+from brainos.memory.semantic import (
+    SemanticMemory as SemanticMemory,
+)
+from brainos.memory.short_term import (
+    ShortTermMemory as ShortTermMemory,
+)
+from brainos.memory.working import (
+    WorkingMemory as WorkingMemory,
+)
 from brainos.memory.weaver import (
     MemoryWeaver as MemoryWeaver,
 )
@@ -173,4 +188,9 @@ __all__ = [
     WeaveResult,
     WeaveStrategy,
     MemoryManager,
+    Episode,
+    EpisodeStore,
+    SemanticMemory,
+    ShortTermMemory,
+    WorkingMemory,
 ]
